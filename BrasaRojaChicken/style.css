@@ -1,0 +1,174 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.menu-container {
+    background-color: #fff;
+    border: 10px solid #c00;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 700px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.menu-header {
+    background-color: #c00;
+    color: #fff;
+    text-align: center;
+    padding: 15px 0;
+    margin: -20px -20px 20px -20px;
+    border-bottom: 5px solid #800;
+}
+
+.menu-header h1 {
+    margin: 0;
+    font-size: 2.5em;
+    letter-spacing: 1px;
+}
+
+.menu-header h2 {
+    margin: 0;
+    font-size: 1.2em;
+    font-style: italic;
+}
+
+.menu-section {
+    margin-bottom: 20px;
+}
+
+.menu-section h3 {
+    font-size: 1.8em;
+    color: #c00;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.parrillas-title {
+    background-color: #f0f0f0;
+    padding: 8px;
+    border-left: 5px solid #c00;
+}
+
+.menu-section p {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: -8px;
+    margin-bottom: 12px;
+}
+
+.menu-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-section li {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dotted #eee;
+}
+
+.menu-section li span {
+    font-weight: bold;
+    color: #333;
+}
+
+.parrillas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    margin-bottom: 15px;
+}
+
+.parrillas-grid h4 {
+    font-size: 1.1em;
+    color: #c00;
+    margin-top: 0;
+    margin-bottom: 4px;
+}
+
+.parrillas-grid p {
+    margin-top: 0;
+    font-size: 0.8em;
+}
+
+.parrilla-familiar {
+    border: 1px solid #ddd;
+    padding: 12px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.parrilla-familiar h4 {
+    font-size: 1.2em;
+    color: #c00;
+    margin-top: 0;
+    margin-bottom: 4px;
+}
+
+.parrilla-familiar p {
+    margin-top: 0;
+    font-size: 0.85em;
+}
+
+.carnes-piqueos-guarniciones {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.carnes-piqueos h3,
+.guarniciones h3 {
+    color: #c00;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    font-size: 1.6em;
+}
+
+.guarniciones {
+    border: 1px solid #c00;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #fffaf0;
+}
+
+.guarniciones ul {
+    list-style: none;
+    padding: 0;
+}
+
+.guarniciones li {
+    padding: 6px 0;
+    border-bottom: 1px dotted #ccc;
+    display: flex;
+    justify-content: space-between;
+}
+
+.guarniciones li span {
+    font-weight: bold;
+    color: #333;
+}
+
+h1, h2, h3, h4 {
+    font-weight: normal;
+}
+
+section h3 {
+    text-transform: uppercase;
+}
+
+.menu-section > p {
+    margin-left: 8px;
+}
