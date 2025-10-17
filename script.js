@@ -1,484 +1,104 @@
-    // --- Variables Globales y Configuración de Voz ---
-    let sintetizadorVoz = window.speechSynthesis;
-    let enunciadoActual = null; // Para controlar la lectura actual
-    let reconocimientoVoz = null;
-    let escuchando = false;
-    let pedidoActual = []; // Almacena los ítems del pedido
-    let datosMenu = {}; // Objeto para almacenar la estructura del menú fácilmente
+import {
+  hablar,
+  iniciarReconocimientoVoz,
+  sintetizadorVoz,
+  escuchando,
+  enunciadoActual,
+} from './utils/voice.js';
+import {
+  cargarMenuDesdeHTML,
+  iniciarMenuInteractivo,
+  procesarSeleccionMenu,
+} from './menu-logic.js';
 
-    // --- Funciones de Síntesis de Voz (TTS) ---
-    function hablar(texto, callback) {
-        if (sintetizadorVoz.speaking) {
-            sintetizadorVoz.cancel();
-        }
-        enunciadoActual = new SpeechSynthesisUtterance(texto);
-        enunciadoActual.lang = 'es-ES';
-        enunciadoActual.rate = 1;
-        enunciadoActual.pitch = 1;
+// --- variables globales ---
+// esta sección define las variables que se usarán en todo el script para mantener el estado de la aplicación.
+let primerInicio = true; // bandera para saber si es la primera vez que el usuario interactúa.
+let nombreCliente = ''; // variable que almacenará el nombre del cliente una vez que lo diga.
 
-        enunciadoActual.onend = () => {
-            console.log('Lectura finalizada.');
-            enunciadoActual = null;
-            if (callback) callback();
-        };
-        enunciadoActual.onerror = (event) => {
-            console.error('Error en la síntesis de voz:', event);
-            enunciadoActual = null;
-            if (callback) callback(); // Llamar callback incluso si hay error
-        };
+// --- funciones de inicio y gestión del cliente ---
+// estas funciones manejan el saludo inicial y la captura del nombre del cliente.
+function preguntarNombreCliente() {
+  hablar('Hola. Bienvenido a Brasa Roja, ¿Cuál es tu nombre?', () => {
+    iniciarReconocimientoVoz(procesarNombreCliente, (errorType) => {
+      if (errorType === 'no-speech') {
+        // si el reconocimiento de voz termina sin detectar audio, se vuelve a llamar a esta misma función para preguntar de nuevo.
+        preguntarNombreCliente();
+      }
+      // para otros errores como 'audio-capture' o 'not-allowed', el sistema de voz ya informa al usuario.
+      // la aplicación simplemente esperará a que el usuario presione la barra espaciadora de nuevo.
+    });
+  });
+}
 
-        sintetizadorVoz.speak(enunciadoActual);
+function procesarNombreCliente(comando) {
+  let nombreExtraido = comando.trim();
+
+  // se intenta extraer solo el nombre de frases comunes como "mi nombre es..." o "soy...".
+  const patronesNombre = [
+    /mi nombre es (.+)/i, // busca la frase "mi nombre es" seguida de cualquier texto.
+    /soy (.+)/i, // busca la frase "soy" seguida de cualquier texto.
+    /me llamo (.+)/i, // busca la frase "me llamo" seguida de cualquier texto.
+  ];
+
+  for (const patron of patronesNombre) {
+    const match = nombreExtraido.match(patron);
+    if (match && match[1]) {
+      nombreExtraido = match[1].trim();
+      break; // si se encuentra una coincidencia, se detiene el bucle para no seguir buscando.
     }
+  }
 
-    // --- Funciones de Reconocimiento de Voz (STT) ---
-    function iniciarReconocimientoVoz(callback) {
-        if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-            console.warn('El reconocimiento de voz no es compatible con este navegador.');
-            hablar('Lo siento, tu navegador no soporta el reconocimiento de voz.');
-            return;
-        }
+  // si después de la extracción el nombre está vacío (por ejemplo, si el usuario solo dijo "hola"), se le asigna un valor por defecto.
+  nombreCliente = nombreExtraido || 'Cliente Desconocido';
+  console.log('script.js: nombreCliente establecido a:', nombreCliente); // log de depuración para verificar que el nombre se ha capturado correctamente.
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        reconocimientoVoz = new SpeechRecognition();
+  // si se logró capturar un nombre real, se procede al siguiente paso.
+  if (nombreCliente !== 'Cliente Desconocido') {
+    hablar(
+      `Mucho gusto, ${nombreCliente}. ¿Sobre qué sección del menú deseas escuchar? Puedes decir "Brasa", "Broaster", "Parrillas", "Carnes y Piqueos" o "Guarniciones".`,
+      () => {
+        primerInicio = false; // se actualiza la bandera para indicar que la introducción ha terminado.
+        // se inicia el reconocimiento de voz para escuchar la selección del menú, pasando el nombre del cliente.
+        iniciarReconocimientoVoz((cmd) =>
+          procesarSeleccionMenu(cmd, nombreCliente)
+        );
+      }
+    );
+  } else {
+    // si no se pudo extraer un nombre válido, se le pide al usuario que lo intente de nuevo.
+    hablar('No pude entender tu nombre. Por favor, repítelo.', () => {
+      // se llama recursivamente a la función para reiniciar el proceso de pregunta.
+      preguntarNombreCliente();
+    });
+  }
+}
 
-        reconocimientoVoz.lang = 'es-ES';
-        reconocimientoVoz.interimResults = false;
-        reconocimientoVoz.maxAlternatives = 1;
+// --- inicialización (se ejecuta cuando la página ha cargado completamente) ---
+window.onload = () => {
+  // se extrae la estructura del menú desde el archivo html para que el sistema sepa qué platos y precios existen.
+  cargarMenuDesdeHTML();
 
-        reconocimientoVoz.onstart = () => {
-            escuchando = true;
-            console.log('Reconocimiento de voz iniciado. Habla ahora...');
-            // Puedes añadir un indicador visual o sonoro de que está escuchando
-        };
+  // se configura un detector de eventos para que la barra espaciadora active la interacción por voz.
+  document.addEventListener('keydown', (event) => {
+    if (event.code === 'Space') {
+      // previene el comportamiento por defecto de la barra espaciadora, que es hacer scroll en la página.
+      event.preventDefault();
 
-        reconocimientoVoz.onresult = (event) => {
-            const ultimo = event.results.length - 1;
-            const transcripcion = event.results[ultimo][0].transcript.toLowerCase();
-            console.log('Comando recibido:', transcripcion);
-            // No detenemos el reconocimiento aquí, lo haremos en el callback si es necesario.
-            if (callback) callback(transcripcion);
-        };
-
-        reconocimientoVoz.onerror = (event) => {
-            console.error('Error en el reconocimiento de voz:', event.error);
-            escuchando = false;
-            // Intentar reiniciar el reconocimiento después de un error de red, si no es una interrupción por stop()
-            if (event.error === 'network' || event.error === 'audio-capture' || event.error === 'not-allowed') {
-                hablar('Hubo un problema con el micrófono o la red. Por favor, asegúrate de tener una conexión estable y permisos de micrófono. Intentando de nuevo...', () => {
-                    // Un pequeño retraso antes de reiniciar para evitar bucles rápidos
-                    setTimeout(() => { iniciarReconocimientoVoz(callback); }, 1500);
-                });
-            } else {
-                hablar('Hubo un error en el reconocimiento de voz. Por favor, inténtalo de nuevo.', () => {
-                     // En otros errores, podemos simplemente terminar o esperar otra interacción
-                });
-            }
-        };
-
-        reconocimientoVoz.onend = () => {
-            console.log('Reconocimiento de voz finalizado.');
-            // Si no estamos esperando un comando, no reiniciamos aquí automáticamente.
-            escuchando = false;
-        };
-
-        if (!escuchando) {
-            reconocimientoVoz.start();
+      // esta comprobación evita que el usuario pueda interrumpir al asistente mientras habla o escucha.
+      if (!sintetizadorVoz.speaking && !escuchando && !enunciadoActual) {
+        // la lógica principal: si aún no tenemos el nombre del cliente, la primera acción siempre será preguntarlo.
+        if (!nombreCliente || nombreCliente === 'Cliente Desconocido') {
+          preguntarNombreCliente();
         } else {
-            console.log('Ya estoy escuchando.');
+          // si ya tenemos el nombre, se salta la pregunta y se va directamente al menú interactivo.
+          iniciarMenuInteractivo(nombreCliente);
         }
+      } else {
+        console.log(
+          'Sistema de voz ocupado o ya escuchando. Ignorando pulsación de espacio.'
+        );
+      }
     }
-
-    function detenerReconocimientoVoz() {
-        if (reconocimientoVoz && escuchando) {
-            reconocimientoVoz.stop();
-            escuchando = false;
-            console.log('Reconocimiento de voz detenido.');
-        }
-    }
-
-    // --- Lógica del Menú Interactivo ---
-
-    // Helper para encontrar la mejor coincidencia de un ítem en el menú basado en el comando
-    function encontrarCoincidenciaDeItem(comandoTexto) {
-        let mejorCoincidencia = null;
-        let longitudMejorCoincidencia = 0;
-
-        for (const categoria in datosMenu) {
-            for (const itemMenu of datosMenu[categoria]) {
-                // Eliminar el precio para una mejor coincidencia del nombre del ítem
-                const nombreItemLimpio = itemMenu.item.toLowerCase().replace(/s\/\d+\.?\d*/, '').trim();
-                
-                // Priorizar coincidencias más largas y específicas
-                if (comandoTexto.includes(nombreItemLimpio) && nombreItemLimpio.length > 3) { // Aceptar ítems más cortos como "bife"
-                    if (nombreItemLimpio.length > longitudMejorCoincidencia) {
-                        mejorCoincidencia = itemMenu;
-                        longitudMejorCoincidencia = nombreItemLimpio.length;
-                    }
-                }
-            }
-        }
-        return mejorCoincidencia; // Retorna el objeto completo del ítem del menú o null
-    }
-
-    // Función para extraer el menú del HTML
-    function cargarMenuDesdeHTML() {
-        const categorias = {};
-
-        // Brasa
-        const seccionBrasa = document.querySelector('.menu-section:nth-of-type(1)');
-        if (seccionBrasa) {
-            categorias['brasa'] = [];
-            seccionBrasa.querySelectorAll('li').forEach(li => {
-                const texto = li.textContent;
-                const coincidencia = texto.match(/(.*?)\s*S\/(\d+\.?\d*)/);
-                if (coincidencia) {
-                    categorias['brasa'].push({ item: coincidencia[1].trim(), precio: parseFloat(coincidencia[2]) });
-                }
-            });
-        }
-
-        // Broaster
-        const seccionBroaster = document.querySelector('.menu-section:nth-of-type(2)');
-        if (seccionBroaster) {
-            categorias['broaster'] = [];
-            seccionBroaster.querySelectorAll('li').forEach(li => {
-                const texto = li.textContent;
-                const coincidencia = texto.match(/(.*?)\s*S\/(\d+\.?\d*)/);
-                if (coincidencia) {
-                    categorias['broaster'].push({ item: coincidencia[1].trim(), precio: parseFloat(coincidencia[2]) });
-                }
-            });
-        }
-
-        // Parrillas
-        const seccionParrillas = document.querySelector('.menu-section:nth-of-type(3)');
-        if (seccionParrillas) {
-            categorias['parrillas'] = [];
-            // Parrilla Chica
-            const parrillaChicaEl = seccionParrillas.querySelector('.parrillas-grid h4');
-            if (parrillaChicaEl) {
-                const texto = parrillaChicaEl.textContent;
-                const coincidencia = texto.match(/(.*?)\s*S\/(\d+\.?\d*)/);
-                if (coincidencia) categorias['parrillas'].push({ item: coincidencia[1].trim(), precio: parseFloat(coincidencia[2]) });
-            }
-            // Parrilla Media
-            const parrillaMediaEl = seccionParrillas.querySelector('.parrillas-grid > div:nth-child(2) h4');
-            if (parrillaMediaEl) {
-                const texto = parrillaMediaEl.textContent;
-                const coincidencia = texto.match(/(.*?)\s*S\/(\d+\.?\d*)/);
-                if (coincidencia) categorias['parrillas'].push({ item: coincidencia[1].trim(), precio: parseFloat(coincidencia[2]) });
-            }
-            // Parrilla Familiar
-            const parrillaFamiliarEl = seccionParrillas.querySelector('.parrilla-familiar h4');
-            if (parrillaFamiliarEl) {
-                const texto = parrillaFamiliarEl.textContent;
-                const coincidencia = texto.match(/(.*?)\s*S\/(\d+\.?\d*)/);
-                if (coincidencia) categorias['parrillas'].push({ item: coincidencia[1].trim(), precio: parseFloat(coincidencia[2]) });
-            }
-        }
-
-        // Carnes y Piqueos
-        const seccionCarnesPiqueos = document.querySelector('.carnes-piqueos');
-        if (seccionCarnesPiqueos) {
-            categorias['carnes y piqueos'] = [];
-            seccionCarnesPiqueos.querySelectorAll('li').forEach(li => {
-                const texto = li.textContent;
-                const coincidencia = texto.match(/(.*?)\s*S\/(\d+\.?\d*)/);
-                if (coincidencia) {
-                    categorias['carnes y piqueos'].push({ item: coincidencia[1].trim(), precio: parseFloat(coincidencia[2]) });
-                }
-            });
-        }
-
-        // Guarniciones
-        const seccionGuarniciones = document.querySelector('.guarniciones');
-        if (seccionGuarniciones) {
-            categorias['guarniciones'] = [];
-            seccionGuarniciones.querySelectorAll('li').forEach(li => {
-                const texto = li.textContent;
-                const coincidencia = texto.match(/(.*?)\s*S\/(\d+\.?\d*)/);
-                if (coincidencia) {
-                    categorias['guarniciones'].push({ item: coincidencia[1].trim(), precio: parseFloat(coincidencia[2]) });
-                }
-            });
-        }
-
-        datosMenu = categorias;
-        console.log('Menú cargado:', datosMenu);
-    }
-
-
-    function iniciarMenuInteractivo() {
-        hablar('¿Sobre qué sección del menú deseas escuchar? Puedes decir "Brasa", "Broaster", "Parrillas", "Carnes y Piqueos" o "Guarniciones".', () => {
-            iniciarReconocimientoVoz(procesarSeleccionMenu);
-        });
-    }
-
-    function procesarSeleccionMenu(comando) {
-        const comandoNormalizado = comando.toLowerCase();
-        let categoriaSeleccionada = null;
-
-        if (comandoNormalizado.includes('brasa')) {
-            categoriaSeleccionada = 'brasa';
-        } else if (comandoNormalizado.includes('broaster')) {
-            categoriaSeleccionada = 'broaster';
-        } else if (comandoNormalizado.includes('parrillas')) {
-            categoriaSeleccionada = 'parrillas';
-        } else if (comandoNormalizado.includes('carnes y piqueos')) {
-            categoriaSeleccionada = 'carnes y piqueos';
-        } else if (comandoNormalizado.includes('guarniciones')) {
-            categoriaSeleccionada = 'guarniciones';
-        }
-
-        if (categoriaSeleccionada && datosMenu[categoriaSeleccionada]) {
-            let textoCategoria = `Aquí está nuestra sección de ${categoriaSeleccionada}: `;
-            datosMenu[categoriaSeleccionada].forEach(item => {
-                textoCategoria += `${item.item} a ${item.precio.toFixed(2).replace('.', ' con ')} soles. `;
-            });
-            hablar(textoCategoria + '¿Deseas añadir algo de esta sección a tu pedido, o prefieres escuchar otra sección? También puedes decir "finalizar pedido".', () => {
-                iniciarReconocimientoVoz(procesarComandoPedido);
-            });
-        } else {
-            hablar('Lo siento, no entendí esa sección o no está disponible. Por favor, di una de las opciones: Brasa, Broaster, Parrillas, Carnes y Piqueos o Guarniciones.', () => {
-                iniciarReconocimientoVoz(procesarSeleccionMenu); // Volver a pedir la selección
-            });
-        }
-    }
-
-    function procesarComandoPedido(comando) {
-        const comandoNormalizado = comando.toLowerCase();
-
-        // Comandos explícitos primero
-        if (comandoNormalizado.includes('otra sección') || comandoNormalizado.includes('escuchar otra') || comandoNormalizado.includes('cambiar sección')) {
-            iniciarMenuInteractivo(); // Volver al inicio para seleccionar otra sección
-        } else if (comandoNormalizado.includes('finalizar pedido') || comandoNormalizado.includes('confirmar pedido') || comandoNormalizado.includes('terminar pedido')) {
-            confirmarPedido(); // Iniciar el proceso de confirmación de pedido
-        } else if (comandoNormalizado.includes('ver pedido') || comandoNormalizado.includes('qué tengo pedido') || comandoNormalizado.includes('mostrar pedido')) {
-            leerPedidoActual();
-        } else if (comandoNormalizado.includes('cuánto es') || comandoNormalizado.includes('total del pedido') || comandoNormalizado.includes('precio total')) {
-            calcularYHablarTotal();
-        } else if (comandoNormalizado.includes('quitar') || comandoNormalizado.includes('eliminar') || comandoNormalizado.includes('remover')) {
-            quitarItemDePedido(comandoNormalizado);
-        } else if (comandoNormalizado.includes('qué opciones hay') || comandoNormalizado.includes('ayuda') || comandoNormalizado.includes('instrucciones')) {
-            hablar('Puedes decir: "quiero [nombre del plato]", "quitar [nombre del plato]", "ver pedido", "cuánto es", "otra sección" o "finalizar pedido".', () => {
-                iniciarReconocimientoVoz(procesarComandoPedido);
-            });
-        } else if (comandoNormalizado.includes('repetir') || comandoNormalizado.includes('decir de nuevo')) {
-            // Podríamos volver a leer el último mensaje hablado o la sección actual
-            iniciarMenuInteractivo(); // Volver a leer las secciones principales por simplicidad
-        } else if (comandoNormalizado.includes('quiero') || comandoNormalizado.includes('agregar') || comandoNormalizado.includes('dame') || comandoNormalizado.includes('añadir') || comandoNormalizado.includes('deseo') || comandoNormalizado.includes('quisiera')) {
-            // Si contiene estas palabras clave, es un intento de añadir
-            agregarItemAPedido(comandoNormalizado);
-        } else {
-            // Si no es un comando explícito, intenta directamente añadirlo como un ítem de menú
-            // Esto permite decir solo el nombre del plato
-            const itemDetectado = encontrarCoincidenciaDeItem(comandoNormalizado);
-            if (itemDetectado) {
-                agregarItemAPedido(comandoNormalizado); // La función agregarItemAPedido manejará la cantidad y el item
-            } else {
-                hablar('Lo siento, no entendí tu comando. Por favor, repite o di "qué opciones hay" para escuchar la ayuda.', () => {
-                     iniciarReconocimientoVoz(procesarComandoPedido); // Seguir escuchando comandos
-                });
-            }
-        }
-    }
-
-    function agregarItemAPedido(comandoOriginal) {
-        let cantidadAAgregar = 1; // Por defecto, se agrega 1
-        let comandoParaBuscarItem = comandoOriginal.toLowerCase();
-        let itemEncontrado = null;
-
-        // --- PRIMER INTENTO: Buscar coincidencia directa del ítem (ej. "1/4 pollo a la brasa") ---
-        itemEncontrado = encontrarCoincidenciaDeItem(comandoParaBuscarItem);
-
-        if (!itemEncontrado) {
-            // --- SEGUNDO INTENTO: Si no hay coincidencia directa, intentar extraer cantidad ---
-            const coincidenciaCantidad = comandoParaBuscarItem.match(/(?:(?:uno|un|una)\s*|dos\s*|tres\s*|cuatro\s*|cinco\s*|seis\s*|siete\s*|ocho\s*|nueve\s*|diez\s*)?/);
-            if (coincidenciaCantidad && coincidenciaCantidad[0]) {
-                const palabraCantidad = coincidenciaCantidad[0].trim();
-                switch (palabraCantidad) {
-                    case 'uno':
-                    case 'un':
-                    case 'una': cantidadAAgregar = 1; break;
-                    case 'dos': cantidadAAgregar = 2; break;
-                    case 'tres': cantidadAAgregar = 3; break;
-                    case 'cuatro': cantidadAAgregar = 4; break;
-                    case 'cinco': cantidadAAgregar = 5; break;
-                    case 'seis': cantidadAAgregar = 6; break;
-                    case 'siete': cantidadAAgregar = 7; break;
-                    case 'ocho': cantidadAAgregar = 8; break;
-                    case 'nueve': cantidadAAgregar = 9; break;
-                    case 'diez': cantidadAAgregar = 10; break;
-                    default: cantidadAAgregar = 1; // Si no se reconoce, por defecto 1
-                }
-                // Eliminar la palabra de cantidad del comando para facilitar la búsqueda del item
-                comandoParaBuscarItem = comandoParaBuscarItem.replace(palabraCantidad, '').trim();
-            }
-            itemEncontrado = encontrarCoincidenciaDeItem(comandoParaBuscarItem);
-        }
-        
-        // --- Lógica para agregar el ítem (si se encontró) --- 
-        if (itemEncontrado) {
-            let itemExistente = pedidoActual.find(itemPedido => itemPedido.item === itemEncontrado.item);
-            if (itemExistente) {
-                itemExistente.cantidad += cantidadAAgregar;
-                hablar(`Agregado ${cantidadAAgregar} de ${itemEncontrado.item}. Ahora tienes ${itemExistente.cantidad} en total.`);
-            } else {
-                pedidoActual.push({ item: itemEncontrado.item, cantidad: cantidadAAgregar, precio: itemEncontrado.precio });
-                hablar(`Agregado ${cantidadAAgregar} de ${itemEncontrado.item} a tu pedido.`);
-            }
-            console.log('Pedido actual:', pedidoActual);
-            hablar('¿Algo más de esta sección, otra sección, o "finalizar pedido"?', () => {
-                iniciarReconocimientoVoz(procesarComandoPedido);
-            });
-        } else {
-            hablar('Lo siento, no pude encontrar ese plato en el menú. Por favor, repítelo o sé más específico.', () => {
-                iniciarReconocimientoVoz(procesarComandoPedido);
-            });
-        }
-    }
-
-    function quitarItemDePedido(comando) {
-        let itemParaQuitar = null;
-
-        for (const itemPedido of pedidoActual) {
-            const nombreItemLimpio = itemPedido.item.toLowerCase();
-            if (comando.includes(nombreItemLimpio)) {
-                itemParaQuitar = itemPedido;
-                break;
-            }
-        }
-
-        if (itemParaQuitar) {
-            if (itemParaQuitar.cantidad > 1) {
-                itemParaQuitar.cantidad--;
-                hablar(`Quitado uno de ${itemParaQuitar.item}. Ahora tienes ${itemParaQuitar.cantidad}.`);
-            } else {
-                pedidoActual = pedidoActual.filter(itemPedido => itemPedido.item !== itemParaQuitar.item);
-                hablar(`Quitado ${itemParaQuitar.item} de tu pedido completamente.`);
-            }
-            console.log('Pedido actual:', pedidoActual);
-            hablar('¿Algo más, o "finalizar pedido"?', () => {
-                iniciarReconocimientoVoz(procesarComandoPedido);
-            });
-        } else {
-            hablar('Ese plato no está en tu pedido. ¿Qué deseas quitar?', () => {
-                iniciarReconocimientoVoz(procesarComandoPedido);
-            });
-        }
-    }
-
-
-    function leerPedidoActual() {
-        if (pedidoActual.length === 0) {
-            hablar('Tu pedido está vacío.');
-            return;
-        }
-        let resumenPedido = "Tu pedido actual es: ";
-        pedidoActual.forEach(item => {
-            resumenPedido += `${item.cantidad} de ${item.item}, `;
-        });
-        hablar(resumenPedido + '¿Deseas modificarlo o "finalizar pedido"?', () => {
-            iniciarReconocimientoVoz(procesarComandoPedido);
-        });
-    }
-
-    function calcularYHablarTotal() {
-        let total = pedidoActual.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
-        if (total > 0) {
-            hablar(`El total de tu pedido es ${total.toFixed(2).replace('.', ' con ')} soles.`, () => {
-                 hablar('¿Deseas confirmar el pedido?', () => {
-                     iniciarReconocimientoVoz(procesarComandoPedido);
-                 });
-            });
-        } else {
-            hablar('Tu pedido está vacío.');
-        }
-    }
-
-
-    async function confirmarPedido() {
-        if (pedidoActual.length === 0) {
-            hablar('Tu pedido está vacío. No hay nada que confirmar.');
-            return;
-        }
-
-        let total = pedidoActual.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
-        hablar(`El total de tu pedido es ${total.toFixed(2).replace('.', ' con ')} soles. ¿Deseas confirmar este pedido? Di "sí" o "no".`, () => {
-            iniciarReconocimientoVoz(procesarRespuestaConfirmacion);
-        });
-    }
-
-    async function procesarRespuestaConfirmacion(comando) {
-        const comandoNormalizado = comando.toLowerCase();
-
-        if (comandoNormalizado.includes('sí') || comandoNormalizado.includes('si')) {
-            hablar('Confirmando tu pedido...');
-            let total = pedidoActual.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
-            await enviarPedidoAlBackend(pedidoActual, total);
-            pedidoActual = []; // Limpiar el pedido después de enviar
-        } else if (comandoNormalizado.includes('no')) {
-            hablar('Pedido no confirmado. Puedes continuar añadiendo o quitando ítems.', () => {
-                iniciarReconocimientoVoz(procesarComandoPedido);
-            });
-        } else {
-            hablar('No entendí tu respuesta. Por favor, di "sí" o "no".', () => {
-                iniciarReconocimientoVoz(procesarRespuestaConfirmacion); // Vuelve a escuchar
-            });
-        }
-    }
-
-    // --- Integración con el Backend ---
-    async function enviarPedidoAlBackend(itemsPedido, montoTotal) {
-        const nombreCliente = "Cliente Invidente"; // O podrías preguntar por voz
-        const datosPedido = {
-            cliente_nombre: nombreCliente,
-            detalle_pedido: itemsPedido,
-            total: parseFloat(montoTotal.toFixed(2))
-        };
-
-        try {
-            const respuesta = await fetch('http://localhost:3000/api/pedidos', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(datosPedido)
-            });
-
-            const datos = await respuesta.json();
-            if (respuesta.ok) {
-                hablar('Tu pedido ha sido recibido con éxito. Número de pedido: ' + datos.pedidoId + '. Gracias por tu compra.');
-                console.log('Pedido enviado con éxito:', datos);
-            } else {
-                hablar('Lo siento, hubo un problema al enviar tu pedido: ' + datos.message);
-                console.error('Error al enviar el pedido:', datos.message);
-            }
-        } catch (error) {
-            hablar('Lo siento, no pude conectar con el servidor. Por favor, inténtalo de nuevo más tarde.');
-            console.error('Error de red o del servidor:', error);
-        }
-    }
-
-    // --- Inicialización (llamado cuando la página carga) ---
-    window.onload = () => {
-        // Cargar los datos del menú del HTML cuando la página esté lista
-        cargarMenuDesdeHTML();
-
-        // El mensaje de bienvenida ahora se hablará SÓLO después de la primera pulsación de 'espacio'
-        let primerInicio = true;
-        document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space' && !escuchando && !sintetizadorVoz.speaking) {
-                event.preventDefault(); // Evita que la página haga scroll con espacio
-                if (primerInicio) {
-                    hablar("Bienvenido. Puedes decir 'Brasa', 'Broaster', 'Parrillas', 'Carnes y Piqueos' o 'Guarniciones'.", () => {
-                        iniciarReconocimientoVoz(procesarSeleccionMenu);
-                    });
-                    primerInicio = false;
-                } else {
-                    // Si no es el primer inicio, solo reactiva el reconocimiento si no está activo
-                    iniciarMenuInteractivo(); // Esta función ya llama a hablar y luego a iniciarReconocimientoVoz
-                }
-            }
-        });
-    };
+  });
+};

@@ -1,174 +1,294 @@
-body {
-    font-family: sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
+:root {
+    --primary-color: #c62828;
+    --primary-dark: #8e0000;
+    --secondary-color: #388e3c;
+    --accent-color: #ff9800;
+    --text-dark: #2e2e2e;
+    --text-light: #757575;
+    --background-light: #f9f5f0;
+    --card-bg: #ffffff;
+    --gold: #d4af37;
 }
 
-.menu-container {
-    background-color: #fff;
-    border: 10px solid #c00;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 700px;
-    padding: 20px;
+* {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
+body {
+    font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #f9f5f0 0%, #f0e6d6 100%);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    overflow-x: auto;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 .menu-header {
-    background-color: #c00;
-    color: #fff;
     text-align: center;
-    padding: 15px 0;
-    margin: -20px -20px 20px -20px;
-    border-bottom: 5px solid #800;
+    margin-bottom: 30px;
+    padding: 20px;
+    position: relative;
+}
+
+.menu-header::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 3px;
+    background: linear-gradient(
+        to right,
+        transparent,
+        var(--primary-color),
+        transparent
+    );
 }
 
 .menu-header h1 {
+    font-size: 3.5rem;
+    color: var(--primary-color);
     margin: 0;
-    font-size: 2.5em;
-    letter-spacing: 1px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: inline-block;
+}
+
+.menu-header h1::before,
+.menu-header h1::after {
+    content: "✦";
+    color: var(--gold);
+    margin: 0 15px;
+    font-size: 1.5rem;
 }
 
 .menu-header h2 {
-    margin: 0;
-    font-size: 1.2em;
-    font-style: italic;
+    font-size: 1.8rem;
+    color: var(--secondary-color);
+    margin: 5px 0 0 0;
+    font-weight: 500;
+    letter-spacing: 2px;
+}
+
+.menu-carta {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    padding: 40px;
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-carta::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(
+        to right,
+        var(--primary-color),
+        var(--secondary-color),
+        var(--accent-color)
+    );
+}
+
+.menu-carta-row {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+.menu-carta-row:last-child {
+    margin-bottom: 0;
 }
 
 .menu-section {
-    margin-bottom: 20px;
+    flex: 1;
+    min-width: 0;
+    padding: 0 15px;
+    position: relative;
+}
+
+.menu-section:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -20px;
+    height: 100%;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, #e0e0e0, transparent);
 }
 
 .menu-section h3 {
-    font-size: 1.8em;
-    color: #c00;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 8px;
-    margin-bottom: 12px;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.parrillas-title {
-    background-color: #f0f0f0;
-    padding: 8px;
-    border-left: 5px solid #c00;
+.menu-section h3::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--primary-color), transparent);
 }
 
 .menu-section p {
-    font-size: 0.8em;
-    color: #666;
-    margin-top: -8px;
-    margin-bottom: 12px;
+    font-size: 0.95rem;
+    color: var(--text-light);
+    margin-bottom: 20px;
+    font-style: italic;
+    line-height: 1.4;
 }
 
 .menu-section ul {
     list-style: none;
     padding: 0;
     margin: 0;
+    width: 100%;
 }
 
 .menu-section li {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px dotted #eee;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #e0e0e0;
+    position: relative;
+}
+
+.menu-section li:last-child {
+    border-bottom: none;
+}
+
+.menu-section li .item-info {
+    flex: 1;
+    padding-right: 15px;
+}
+
+.menu-section li strong {
+    color: var(--text-dark);
+    font-weight: 600;
+    font-size: 1.05rem;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.menu-section li small {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    line-height: 1.3;
+    display: block;
 }
 
 .menu-section li span {
-    font-weight: bold;
-    color: #333;
+    font-weight: 700;
+    color: var(--secondary-color);
+    font-size: 1.1rem;
+    white-space: nowrap;
 }
 
-.parrillas-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-        gap: 15px;
-    margin-bottom: 15px;
+.section-icon {
+    color: var(--primary-color);
+    font-size: 1.2rem;
 }
 
-.parrillas-grid h4 {
-    font-size: 1.1em;
-    color: #c00;
-    margin-top: 0;
-    margin-bottom: 4px;
+.menu-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    color: var(--text-light);
+    font-size: 0.9rem;
 }
 
-.parrillas-grid p {
-    margin-top: 0;
-    font-size: 0.8em;
+.menu-footer p {
+    margin: 5px 0;
 }
 
-.parrilla-familiar {
-    border: 1px solid #ddd;
-    padding: 12px;
-    background-color: #f9f9f9;
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .menu-carta-row {
+        gap: 30px;
+    }
+
+    .menu-carta {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 900px) {
+    .menu-carta-row {
+        flex-direction: column;
+        gap: 40px;
+    }
+
+    .menu-section:not(:last-child)::after {
+        display: none;
+    }
+
+    body {
+        padding: 15px;
+        overflow-x: hidden;
+    }
+}
+
+@media (max-width: 600px) {
+    .menu-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .menu-header h2 {
+        font-size: 1.4rem;
+    }
+
+    .menu-carta {
+        padding: 20px;
+    }
+}
+
+/* Animaciones sutiles */
+.menu-section {
+    transition: transform 0.3s ease;
+}
+
+.menu-section:hover {
+    transform: translateY(-5px);
+}
+
+.menu-section li {
+    transition: all 0.2s ease;
+}
+
+.menu-section li:hover {
+    background-color: rgba(198, 40, 40, 0.03);
     border-radius: 5px;
-}
-
-.parrilla-familiar h4 {
-    font-size: 1.2em;
-    color: #c00;
-    margin-top: 0;
-    margin-bottom: 4px;
-}
-
-.parrilla-familiar p {
-    margin-top: 0;
-    font-size: 0.85em;
-}
-
-.carnes-piqueos-guarniciones {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
-}
-
-.carnes-piqueos h3,
-.guarniciones h3 {
-    color: #c00;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 8px;
-    margin-bottom: 12px;
-    font-size: 1.6em;
-}
-
-.guarniciones {
-    border: 1px solid #c00;
-    padding: 15px;
-    border-radius: 8px;
-    background-color: #fffaf0;
-}
-
-.guarniciones ul {
-    list-style: none;
-    padding: 0;
-}
-
-.guarniciones li {
-    padding: 6px 0;
-    border-bottom: 1px dotted #ccc;
-    display: flex;
-    justify-content: space-between;
-}
-
-.guarniciones li span {
-    font-weight: bold;
-    color: #333;
-}
-
-h1, h2, h3, h4 {
-    font-weight: normal;
-}
-
-section h3 {
-    text-transform: uppercase;
-}
-
-.menu-section > p {
-    margin-left: 8px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
