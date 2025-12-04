@@ -41,12 +41,26 @@ function procesarNombreCliente(comando) {
     /me llamo (.+)/i, // busca la frase "me llamo" seguida de cualquier texto.
   ];
 
+  let encontrado = false;
   for (const patron of patronesNombre) {
     const match = nombreExtraido.match(patron);
     if (match && match[1]) {
       nombreExtraido = match[1].trim();
-      break; // si se encuentra una coincidencia, se detiene el bucle para no seguir buscando.
+      encontrado = true;
+      break; 
     }
+  }
+
+  if (!encontrado) {
+      // Si no se encontró un patrón, verificamos si es una respuesta corta (solo el nombre)
+      const palabras = nombreExtraido.split(/\s+/);
+      if (palabras.length <= 3) {
+          // Asumimos que es el nombre directo
+          encontrado = true;
+      } else {
+          // Si es muy largo y no tiene patrón, probablemente no entendimos bien
+          nombreExtraido = '';
+      }
   }
 
   // si después de la extracción el nombre está vacío (por ejemplo, si el usuario solo dijo "hola"), se le asigna un valor por defecto.

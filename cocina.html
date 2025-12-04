@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brasa Roja - Cocina (KDS)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .kitchen-header {
+            background-color: #d32f2f;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .orders-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-left: 5px solid #d32f2f;
+            /* Pendiente default */
+        }
+
+        .order-card.completed {
+            border-left-color: #4caf50;
+            opacity: 0.7;
+        }
+
+        .order-header {
+            background: #eee;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .order-body {
+            padding: 1rem;
+            flex-grow: 1;
+        }
+
+        .order-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .order-items li {
+            border-bottom: 1px solid #eee;
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .order-items li:last-child {
+            border-bottom: none;
+        }
+
+        .order-footer {
+            padding: 1rem;
+            background: #fafafa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-complete {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-complete:hover {
+            background-color: #45a049;
+        }
+
+        .timestamp {
+            font-size: 0.8rem;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="kitchen-header">
+        <h1><i class="fas fa-utensils"></i> Cocina - Pedidos</h1>
+        <div id="clock">00:00:00</div>
+    </header>
+
+    <div id="orders-container" class="orders-container">
+        <p style="text-align: center; width: 100%;">Cargando pedidos...</p>
+    </div>
+
+    <script src="cocina.js"></script>
+</body>
+
+</html>

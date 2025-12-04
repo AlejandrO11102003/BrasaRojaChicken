@@ -135,19 +135,28 @@ export function procesarSeleccionMenu(comando, nombreCliente) {
     const comandoNormalizado = comando.toLowerCase();
     let categoriaSeleccionada = null;
 
-    // se busca qué categoría mencionó el usuario.
-    if (comandoNormalizado.includes('brasa')) {
+    // se busca qué categoría mencionó el usuario con más flexibilidad.
+    if (comandoNormalizado.includes('brasa') || comandoNormalizado.includes('asado')) {
         categoriaSeleccionada = 'brasa';
-    } else if (comandoNormalizado.includes('broaster')) {
+    } else if (comandoNormalizado.includes('broaster') || comandoNormalizado.includes('frito') || comandoNormalizado.includes('crujiente')) {
         categoriaSeleccionada = 'broaster';
-    } else if (comandoNormalizado.includes('parrillas')) {
+    } else if (comandoNormalizado.includes('parrillas') || comandoNormalizado.includes('parrillada') || comandoNormalizado.includes('churrasco')) {
         categoriaSeleccionada = 'parrillas';
     } else if (
         comandoNormalizado.includes('carnes') ||
-        comandoNormalizado.includes('piqueos')
+        comandoNormalizado.includes('piqueos') ||
+        comandoNormalizado.includes('anticuchos') ||
+        comandoNormalizado.includes('mollejitas') ||
+        comandoNormalizado.includes('entradas')
     ) {
         categoriaSeleccionada = 'carnes y piqueos';
-    } else if (comandoNormalizado.includes('guarniciones')) {
+    } else if (
+        comandoNormalizado.includes('guarniciones') ||
+        comandoNormalizado.includes('papas') ||
+        comandoNormalizado.includes('ensalada') ||
+        comandoNormalizado.includes('arroz') ||
+        comandoNormalizado.includes('acompañamientos')
+    ) {
         categoriaSeleccionada = 'guarniciones';
     }
 
