@@ -95,6 +95,7 @@ app.post('/api/pedidos', (req, res) => {
 });
 
 // Ruta para actualizar el estado de un pedido (ej. de 'pendiente' a 'completado')
+//lol
 app.put('/api/pedidos/:id/estado', (req, res) => {
     const { id } = req.params;
     const { estado } = req.body;
