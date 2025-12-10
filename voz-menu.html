@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brasa Roja - Menú por Voz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="voz-style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header class="voice-header">
+            <h1><i class="fas fa-fire"></i> BRASA ROJA</h1>
+            <p>Menú Interactivo por Voz</p>
+        </header>
+
+        <main class="voice-main">
+            <!-- Estado de conexión -->
+            <div id="connection-status" class="status-badge offline">
+                <i class="fas fa-circle"></i> Desconectado
+            </div>
+
+            <!-- Botón de grabación -->
+            <div class="voice-control">
+                <button id="record-btn" class="record-btn" disabled>
+                    <i class="fas fa-microphone"></i>
+                    <span>Mantén presionado para hablar</span>
+                </button>
+                <div id="recording-indicator" class="recording-indicator hidden">
+                    <div class="pulse"></div>
+                    <span>Escuchando...</span>
+                </div>
+            </div>
+
+            <!-- Transcripción en tiempo real -->
+            <div id="transcription" class="transcription hidden">
+                <h3><i class="fas fa-comment-dots"></i> Dijiste:</h3>
+                <p id="transcription-text"></p>
+            </div>
+
+            <!-- Respuesta del sistema -->
+            <div id="response" class="response hidden">
+                <h3><i class="fas fa-robot"></i> Respuesta:</h3>
+                <p id="response-text"></p>
+                <div id="response-details" class="response-details"></div>
+            </div>
+
+            <!-- Carrito de pedido -->
+            <div id="cart" class="cart hidden">
+                <h3><i class="fas fa-shopping-cart"></i> Tu Pedido</h3>
+                <ul id="cart-items"></ul>
+                <div class="cart-total">
+                    <strong>Total:</strong> <span id="cart-total">S/ 0.00</span>
+                </div>
+                <button id="confirm-order-btn" class="btn-confirm">
+                    <i class="fas fa-check"></i> Confirmar Pedido
+                </button>
+            </div>
+
+            <!-- Instrucciones -->
+            <div class="instructions">
+                <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                <ul>
+                    <li>Mantén presionado el botón del micrófono</li>
+                    <li>Di tu pedido claramente (ej: "Quiero medio pollo a la brasa")</li>
+                    <li>Suelta el botón cuando termines</li>
+                    <li>El sistema te responderá por voz</li>
+                </ul>
+                <div class="examples">
+                    <strong>Ejemplos:</strong>
+                    <ul>
+                        <li>"Quiero un cuarto de pollo"</li>
+                        <li>"Dame dos anticuchos"</li>
+                        <li>"Muéstrame las parrillas"</li>
+                        <li>"Agregar papas fritas"</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="voz-app.js"></script>
+</body>
+
+</html>

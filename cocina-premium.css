@@ -1,0 +1,242 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+    color: #fff;
+    overflow-x: hidden;
+}
+
+.kds-header {
+    background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-left i {
+    font-size: 2rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.header-left h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.header-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.stat-card {
+    background: rgba(255,255,255,0.1);
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    backdrop-filter: blur(10px);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+}
+
+.clock {
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+.kds-main {
+    padding: 2rem;
+}
+
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem;
+    opacity: 0.5;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.order-card {
+    background: linear-gradient(135deg, #2d2d44 0%, #3a3a5a 100%);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    border-left: 6px solid #ffc107;
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.order-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.4);
+}
+
+.order-card.pendiente {
+    border-left-color: #ffc107;
+}
+
+.order-card.en-proceso {
+    border-left-color: #2196f3;
+}
+
+.order-card.completado {
+    border-left-color: #4caf50;
+    opacity: 0.6;
+}
+
+.order-header {
+    background: rgba(0,0,0,0.2);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.order-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.order-time {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.order-body {
+    padding: 1.5rem;
+}
+
+.order-cliente {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: #ffc107;
+}
+
+.order-items {
+    list-style: none;
+    margin-bottom: 1rem;
+}
+
+.order-items li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+}
+
+.item-name {
+    font-weight: 600;
+}
+
+.item-qty {
+    color: #ffc107;
+    margin-right: 0.5rem;
+}
+
+.order-total {
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: right;
+    color: #4caf50;
+    margin-top: 1rem;
+}
+
+.order-footer {
+    padding: 1rem 1.5rem;
+    background: rgba(0,0,0,0.2);
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-proceso {
+    background: #2196f3;
+    color: white;
+}
+
+.btn-proceso:hover {
+    background: #1976d2;
+    transform: scale(1.05);
+}
+
+.btn-completar {
+    background: #4caf50;
+    color: white;
+}
+
+.btn-completar:hover {
+    background: #388e3c;
+    transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+    .kds-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .orders-grid {
+        grid-template-columns: 1fr;
+    }
+}
